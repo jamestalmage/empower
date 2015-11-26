@@ -1,5 +1,5 @@
 {
-  "name": "empower-assert",
+  "name": "@jamestalmage/empower-assert",
   "description": "Power Assert feature enhancer for assert function/object",
   "version": "1.1.0",
   "author": {
@@ -50,13 +50,9 @@
   "files": [
     "CHANGELOG.md",
     "MIT-LICENSE.txt",
-    "README.md",
-    "gulpfile.js",
     "index.js",
     "lib",
-    "build/empower-assert.js",
-    "package.json",
-    "test"
+    "build/empower-assert.js"
   ],
   "homepage": "http://github.com/twada/empower-assert",
   "keywords": [
@@ -78,6 +74,7 @@
     "test": "gulp test",
     "unit": "gulp unit",
     "watch": "gulp watch",
-    "coveralls": "gulp coverage && cat ./coverage.lcov | coveralls"
+    "coveralls": "gulp coverage && cat ./coverage.lcov | coveralls",
+    "preversion": "npm test && git add build/empower.js"
   }
 }
