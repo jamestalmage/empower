@@ -7,7 +7,7 @@
  *   author: Takuto Wada <takuto.wada@gmail.com>
  *   contributors: James Talmage
  *   homepage: http://github.com/twada/empower-assert
- *   version: 1.1.0
+ *   version: 1.1.1
  * 
  * call-signature:
  *   license: MIT
@@ -279,9 +279,9 @@ Decorator.prototype.concreteAssert = function (invocation, context) {
     try {
         ret = func.apply(thisObj, args.concat(message));
     } catch (e) {
-        return this.onError({error: e, originalMessage: message, powerAssertContext: context});
+        return this.onError({type: 'error', error: e, originalMessage: message, powerAssertContext: context});
     }
-    return this.onSuccess({returnValue: ret, originalMessage: message, powerAssertContext: context});
+    return this.onSuccess({type: 'success', returnValue: ret, originalMessage: message, powerAssertContext: context});
 };
 
 Decorator.prototype.fallbackAssert = function (invocation) {
@@ -294,9 +294,9 @@ Decorator.prototype.fallbackAssert = function (invocation) {
     try {
         ret = func.apply(thisObj, args);
     } catch (e) {
-        return this.onError({error: e, originalMessage: message, args: args});
+        return this.onError({type: 'error', error: e, originalMessage: message, args: args});
     }
-    return this.onSuccess({returnValue: ret, originalMessage: message, args: args});
+    return this.onSuccess({type: 'success', returnValue: ret, originalMessage: message, args: args});
 };
 
 function numberOfArgumentsToCapture (matcher) {
