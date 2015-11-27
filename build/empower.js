@@ -7,7 +7,7 @@
  *   author: Takuto Wada <takuto.wada@gmail.com>
  *   contributors: James Talmage
  *   homepage: http://github.com/twada/empower-assert
- *   version: 1.1.1
+ *   version: 1.1.2
  * 
  * call-signature:
  *   license: MIT
@@ -167,19 +167,17 @@ function decorate (callSpec, decorator) {
     var numArgsToCapture = callSpec.numArgsToCapture;
 
     return function decoratedAssert () {
-        var context, message, hasMessage = false, args = slice.apply(arguments);
+        var context, message, args = slice.apply(arguments);
 
         if (numArgsToCapture === (args.length - 1)) {
             message = args.pop();
-            hasMessage = true;
         }
 
         var invocation = {
             thisObj: thisObj,
             func: func,
             values: args,
-            message: message,
-            hasMessage: hasMessage
+            message: message
         };
 
         if (some(args, isCaptured)) {
@@ -235,11 +233,13 @@ function Decorator (receiver, config) {
     this.onError = config.onError;
     this.onSuccess = config.onSuccess;
     this.signatures = map(config.patterns, signature.parse);
+    this.addtionalMethods = map(config.additionalMethods, signature.parse);
 }
 
 Decorator.prototype.enhancement = function () {
     var that = this;
     var container = this.container();
+    var wrappedMethods = [];
     forEach(filter(this.signatures, methodCall), function (matcher) {
         var methodName = detectMethodName(matcher.callee);
         if (typeof that.receiver[methodName] === 'function') {
@@ -249,7 +249,36 @@ Decorator.prototype.enhancement = function () {
                 numArgsToCapture: numberOfArgumentsToCapture(matcher)
             };
             container[methodName] = decorate(callSpec, that);
+            wrappedMethods.push(methodName);
         }
+    });
+    forEach(this.addtionalMethods, function (matcher) {
+        var methodName = detectMethodName(matcher.callee);
+        if (wrappedMethods.indexOf(methodName) !== -1 || (typeof that.receiver[methodName] !== 'function')) {
+            return;
+        }
+        wrappedMethods.push(methodName);
+        var func = that.receiver[methodName];
+        var thisObj = that.receiver;
+        var numArgsToCapture = numberOfArgumentsToCapture(matcher);
+
+        container[methodName] = function () {
+            var args = Array.prototype.slice.call(arguments);
+            var message;
+
+            if (numArgsToCapture === (args.length - 1)) {
+                message = args.pop();
+            }
+
+          var invocation = {
+              func: func,
+              thisObj: thisObj,
+              values: args,
+              message: message
+          };
+
+            return that.fallbackAssert(invocation);
+        };
     });
     return container;
 };
@@ -351,7 +380,8 @@ module.exports = function defaultOptions () {
             'assert.notDeepEqual(actual, expected, [message])',
             'assert.deepStrictEqual(actual, expected, [message])',
             'assert.notDeepStrictEqual(actual, expected, [message])'
-        ]
+        ],
+        additionalMethods: []
     };
 };
 

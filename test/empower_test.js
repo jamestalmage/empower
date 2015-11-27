@@ -513,4 +513,42 @@ suite('onSuccess can throw', function () {
     });
 });
 
+suite('additionalMethods', function () {
+    var log;
+    var assert = empower(
+      {
+          fail: function (message) {
+              baseAssert.ok(false, message);
+          }
+      },
+      {
+          additionalMethods: [
+              'assert.fail([message])'
+          ],
+          onError: function () {
+              var data = ['error', slice.call(arguments)];
+              log.push(data);
+              return data;
+          },
+          onSuccess: function () {
+              var data = ['success', slice.call(arguments)];
+              log.push(data);
+              return data;
+          }
+      }
+    );
+    setup(function () {
+        log = [];
+    });
+
+    test('instrumented code', function () {
+
+      var code = weave('assert.fail("Oh no!")');
+        var data = eval(code);
+
+    });
+
+
+});
+
 }));
