@@ -517,4 +517,35 @@ suite('onSuccess can throw', function () {
     });
 });
 
+suite('additionalMethods', function () {
+    var assert = empower(
+      {
+          fail: function (message) {
+              baseAssert.ok(false, message);
+          }
+      },
+      {
+          additionalMethods: [
+              'assert.fail([message])'
+          ],
+          onError: function (event) {
+              baseAssert.equal(event.type, 'error');
+              return event;
+          },
+          onSuccess: function () {
+              baseAssert.equal(event.type, 'success');
+              return event;
+          }
+      }
+    );
+
+    test('instrumented code', function () {
+        var code = weave('assert.fail("Oh no!")');
+        var data = eval(code);
+        baseAssert.equal(data.type, 'error');
+        baseAssert.equal(data.originalMessage, 'Oh no!');
+        baseAssert.deepEqual(data.args, ['Oh no!']);
+    });
+});
+
 }));
